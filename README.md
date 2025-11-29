@@ -43,3 +43,19 @@ Before running SocketTalk, ensure you have:
 ```bash
 git clone https://github.com/your-username/SocketTalk.git
 cd SocketTalk
+```
+
+### 2. Backend Setup
+- Navigate to the backend project root.
+- Build and run the Spring Boot application:
+
+```bash
+mvn spring-boot:run
+```
+
+### - The server will start on http://localhost:8080.
+Spring Boot will expose:
+- WebSocket endpoint: ```/ws```
+- Message mapping: ```/app/sendMessage```
+- Broadcast topic: ```/topic/messages```
+
