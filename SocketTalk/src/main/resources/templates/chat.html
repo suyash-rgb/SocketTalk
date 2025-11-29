@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SocketTalk Chat</title>
+    <!-- Inline CSS -->
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #d0d7e5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .chat-wrapper {
+            display: flex;
+            height: 90vh;
+            width: 600px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            background-color: #f5f7fa;
+        }
+        .chat-sidebar {
+            width: 180px;
+            background-color: #f0f4f8;
+            padding: 10px;
+            border-right: 1px solid #ccc;
+        }
+        .chat-sidebar h4 {
+            margin-top: 0;
+            font-size: 16px;
+            color: #1e3a8a;
+        }
+        .chat-sidebar ul {
+            list-style: none;
+            padding-left: 0;
+            font-size: 14px;
+            color: #333;
+        }
+        .chat-sidebar li {
+            margin-bottom: 6px;
+        }
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+        .chat-header {
+            background-color: #1e3a8a;
+            color: white;
+            padding: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+        }
+        .chat-messages {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            background-color: #e6ecf5;
+        }
+        .message {
+            margin: 8px 0;
+            padding: 10px 15px;
+            border-radius: 8px;
+            max-width: 70%;
+            clear: both;
+            font-size: 14px;
+        }
+        .message.sent {
+            background-color: #3b82f6;
+            color: white;
+            float: right;
+        }
+        .message.received {
+            background-color: #ffffff;
+            color: #333;
+            float: left;
+        }
+        .chat-input {
+            display: flex;
+            padding: 10px;
+            background-color: #f0f4f8;
+        }
+        .chat-input input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 20px;
+            outline: none;
+            font-size: 14px;
+        }
+        .chat-input button {
+            margin-left: 10px;
+            padding: 10px 20px;
+            background-color: #1e3a8a;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+<div class="chat-wrapper">
+    <div class="chat-sidebar">
+        <h4>Participants</h4>
+        <ul id="participants-list"></ul>
+    </div>
+    <div class="chat-container">
+        <div class="chat-header">SocketTalk Chatroom #216351</div>
+        <div class="chat-messages" id="chat-messages"></div>
+        <div class="chat-input">
+            <input type="text" id="messageInput" placeholder="Type a message...">
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+</div>
+
+<!-- Inline JavaScript -->
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+<script>
+    let stompClient = null;
+    let username = null;
+    const participants = new Set();
+
+    window.onload = function () {
+        username = prompt("Enter your name:");
+        if (!username) username = "Anonymous";
+        connect();
+    };
+
+    function connect() {
+        const socket = new SockJS('/chat');
+        stompClient = Stomp.over(socket);
+        stompClient.connect({}, function (frame) {
+            console.log('Connected: ' + frame);
+            stompClient.subscribe('/topic/messages', function (messageOutput) {
+                const message = JSON.parse(messageOutput.body);
+                showMessage(message);
+                participants.add(message.sender);
+                updateParticipants();
+            });
+        });
+    }
+
+    function sendMessage() {
+        const messageContent = document.getElementById("messageInput").value.trim();
+        if (messageContent && stompClient) {
+            const chatMessage = {
+                sender: username,
+                content: messageContent
+            };
+            stompClient.send("/app/sendMessage", {}, JSON.stringify(chatMessage));
+            document.getElementById("messageInput").value = '';
+        }
+    }
+
+    function showMessage(message) {
+        const messagesArea = document.getElementById("chat-messages");
+        const messageElement = document.createElement('div');
+        messageElement.classList.add('message');
+        messageElement.classList.add(message.sender === username ? 'sent' : 'received');
+
+        // If it's your own message, show "You" instead of your username
+        const displayName = (message.sender === username) ? "You" : message.sender;
+
+        messageElement.innerText = displayName + ": " + message.content;
+        messagesArea.appendChild(messageElement);
+        messagesArea.scrollTop = messagesArea.scrollHeight;
+    }
+
+    function updateParticipants() {
+        const list = document.getElementById("participants-list");
+        list.innerHTML = '';
+        Array.from(participants).forEach(name => {
+            const li = document.createElement('li');
+            li.textContent = name;
+            list.appendChild(li);
+        });
+    }
+
+    window.onload = function () {
+        // Prompt for username if you’re using that
+        username = prompt("Enter your name to join chatroom:") || "Anonymous";
+
+        // Attach Enter key listener to the input field
+        document.getElementById("messageInput").addEventListener("keypress", function (event) {
+            if (event.key === "Enter") {
+                event.preventDefault(); // prevent newline
+                sendMessage();          // call your existing function
+            }
+        });
+
+        // Then connect to WebSocket
+        connect();
+    };
+</script>
+</body>
+</html>

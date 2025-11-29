@@ -1,0 +1,28 @@
+feat: Implement real-time chat functionality with WebSocket and STOMP protocol
+
+✅ Backend:
+- Added WebSocketConfig.java to configure STOMP over SockJS
+  - Registered endpoint at `/chat` with allowed origin `http://localhost:8030`
+  - Enabled simple broker on `/topic` and set application destination prefix `/app`
+- Created ChatController.java
+  - Mapped `/sendMessage` to broadcast messages to `/topic/messages`
+  - Added HTTP GET mapping for `/chat` view
+- Defined ChatMessage.java model with fields: `id`, `sender`, `content`
+  - Used Lombok annotations for boilerplate reduction
+
+✅ Frontend:
+- Built responsive Telegram-inspired chat UI in `chat.html`
+  - Blue theme with mobile-style layout centered on desktop
+  - Inline CSS for styling chat bubbles, header, input field, and participant sidebar
+- Integrated SockJS and STOMP.js for WebSocket communication
+  - Connected to `/ws` endpoint and subscribed to `/topic/messages`
+  - Sent messages to `/app/sendMessage` with sender and content
+- Prompted user for name on page load and used it as message sender
+- Displayed messages with dynamic alignment:
+  - "You" for local user messages (right-aligned)
+  - Sender name for others (left-aligned)
+- Tracked active participants locally and displayed them in sidebar
+- Added Enter key listener to input field for quick message sending
+
+🧪 Tested with multiple browser instances to verify real-time sync and UI alignment
+
