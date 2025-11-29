@@ -46,16 +46,40 @@ cd SocketTalk
 ```
 
 ### 2. Backend Setup
-- Navigate to the backend project root.
-- Build and run the Spring Boot application:
+1. Navigate to the backend project root.
+2. Build and run the Spring Boot application:
 
 ```bash
 mvn spring-boot:run
 ```
 
-### - The server will start on http://localhost:8080.
+3. The server will start on http://localhost:8080.
 Spring Boot will expose:
 - WebSocket endpoint: ```/ws```
 - Message mapping: ```/app/sendMessage```
 - Broadcast topic: ```/topic/messages```
+
+### 3. Frontend Setup
+- Place the ```chat.html``` file in the ```resources/template``` directory (or serve it via any static server).
+- Open ```http://localhost:8080/chat.html``` in your browser.
+- Enter your name when prompted.
+- Start chatting! Messages will be broadcast to all connected clients.
+
+## Example Flow
+- User A enters: Hii
+- User B responds: Hello
+- User A sees:
+  
+```bash
+You: Hii
+UserB: Hello
+```
+
+- User B sees:
+
+```bash
+UserA: Hii
+You: Hello
+```
+
 
